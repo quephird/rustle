@@ -15,6 +15,7 @@ pub enum MatchType {
     CorrectPosition,
     WrongPosition,
     None,
+    NotGuessed,
 }
 
 pub struct WordResults {
@@ -53,22 +54,32 @@ fn check_guess(guess: &str, actual: &str, keyboard: &mut HashMap<char, MatchType
             continue;
         } else if let Some(match_index) = matchable_letters.find(guess_char) {
             matches[guess_index] = MatchType::WrongPosition;
-            if keyboard.get(&guess_char).is_none() {
-                keyboard.insert(guess_char, MatchType::WrongPosition);
+            match keyboard.get(&guess_char) {
+                Some(MatchType::None) | Some(MatchType::NotGuessed) => {
+                    keyboard.insert(guess_char, MatchType::WrongPosition);
+                },
+                _ => (),
             }
             matchable_letters.remove(match_index);
+        } else {
+            match keyboard.get(&guess_char) {
+                Some(MatchType::NotGuessed) => {
+                    keyboard.insert(guess_char, MatchType::None);
+                },
+                _ => (),
+            }
         }
     }
 
     WordResults::from(matches, keyboard.clone())
 }
 
-fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
+fn format_cell<C: Color>(bg_color: C, letter: char) -> String {
     format!(
         "{}{} {} {}{}",
         color::Bg(bg_color),
         color::Fg(color::Black),
-        guess_char,
+        letter,
         color::Fg(color::Reset),
         color::Bg(color::Reset),
     )
@@ -76,24 +87,47 @@ fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
 
 fn display_matches(guess: &str, results: &[MatchType; 5]) {
     let mut formatted_result = "".to_string();
-    for (guess_char, result) in zip(guess.to_ascii_uppercase().chars(), results) {
+    for (guess_char, result) in zip(guess.chars(), results) {
         let formatted_cell = match result {
             MatchType::CorrectPosition => format_cell(color::Green, guess_char),
             MatchType::WrongPosition => format_cell(color::Yellow, guess_char),
             MatchType::None => format_cell(color::LightBlack, guess_char),
+            MatchType::NotGuessed => format_cell(color::White, guess_char),
         };
 
         formatted_result.push(' ');
         formatted_result.push_str(&formatted_cell);
-
     }
 
-    println!("{}", formatted_result);
+    println!("{}\n", formatted_result);
 }
+
+fn display_keyboard(keyboard: HashMap<char, MatchType>) {
+    for (indent, keyboard_row) in [("", "qwertyuiop"), (" ", "asdfghjkl"), ("  ", "zxcvbnm")] {
+        let mut formatted_row = "".to_string();
+        formatted_row.push_str(indent);
+        for key_char in keyboard_row.chars() {
+            if let Some(match_type) = keyboard.get(&key_char) {
+                let formatted_cell = match match_type {
+                    MatchType::CorrectPosition => format_cell(color::Green, key_char),
+                    MatchType::WrongPosition => format_cell(color::Yellow, key_char),
+                    MatchType::None => format_cell(color::LightBlack, key_char),
+                    MatchType::NotGuessed => format_cell(color::White, key_char),
+                };
+
+                formatted_row.push(' ');
+                formatted_row.push_str(&formatted_cell);
+            }
+        }
+
+        println!("{}\n", formatted_row);
+    }
+}
+
 
 fn make_empty_keyboard() -> HashMap<char, MatchType> {
     ('a'..='z').fold(HashMap::new(), |mut acc, char| {
-        acc.insert(char, MatchType::None);
+        acc.insert(char, MatchType::NotGuessed);
         acc
     })
 }
@@ -118,6 +152,7 @@ fn main() {
 
         let results = check_guess(guess, actual, &mut keyboard);
         display_matches(guess, &results.matches);
+        display_keyboard(results.keyboard);
 
         if results.matches.iter().all(|result| *result == MatchType::CorrectPosition) {
             println!("You win!!!");
