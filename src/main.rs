@@ -1,6 +1,10 @@
+use std::fs::read_to_string;
+use std::iter::zip;
+
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use termion::color;
 use termion::color::Color;
-use std::iter::zip;
 
 fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
     format!(
@@ -66,9 +70,15 @@ fn format_results(guess: &str, results: [MatchType; 5]) -> String {
 }
 
 fn main() {
-    // TODO: Need to get list of words
-    // TODO: Need to load words into memory
-    // TODO: Need to choose word from list
+    let words: Vec<String> = read_to_string("./words.txt")
+        .unwrap()
+        .lines()
+        .map(String::from)
+        .collect();
+
+    let mut rng = thread_rng();
+    let actual = words.choose(&mut rng).unwrap();
+
     // TODO: Need to get user input
     // TODO: Need to validate user input for length
     // TODO: Need to check that word is in dictionary
@@ -79,8 +89,8 @@ fn main() {
     // TODO: Need to be able to start a new game (like with CTRL-N)
     // TODO: Need to be able to exit cleanly (like with CTRL-D)
     let guess = "pxppo";
-    let actual = "abcpp";
     let results = check_guess(guess, actual);
     let formatted_results = format_results(guess, results);
     println!("{}", formatted_results);
+    println!("{}", actual);
 }
