@@ -1,24 +1,37 @@
+mod word_results;
+
+use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::io::stdin;
 use std::iter::zip;
-use std::process::exit;
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use termion::color;
 use termion::color::Color;
 
-#[derive(PartialEq)]
-enum MatchType {
+#[derive(Clone, PartialEq)]
+pub enum MatchType {
     CorrectPosition,
     WrongPosition,
     None,
 }
 
-fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
+pub struct WordResults {
+    pub matches: [MatchType; 5],
+    pub keyboard: HashMap<char, MatchType>,
+}
+
+impl WordResults {
+    fn from(matches: [MatchType; 5], keyboard: HashMap<char, MatchType>) -> Self {
+        Self {matches, keyboard}
+    }
+}
+
+fn check_guess(guess: &str, actual: &str, keyboard: &mut HashMap<char, MatchType>) -> WordResults {
     // TODO: Need to think of a better name and document strategy below
     let mut matchable_letters = "".to_string();
-    let mut results = [
+    let mut matches = [
         MatchType::None,
         MatchType::None,
         MatchType::None,
@@ -28,22 +41,26 @@ fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
 
     for (index, (guess_char, actual_char)) in zip(guess.chars(), actual.chars()).enumerate() {
         if guess_char == actual_char {
-            results[index] = MatchType::CorrectPosition;
+            matches[index] = MatchType::CorrectPosition;
+            keyboard.insert(guess_char, MatchType::CorrectPosition);
         } else {
             matchable_letters.push(actual_char);
         }
     }
 
     for (guess_index, guess_char) in guess.chars().enumerate() {
-        if results[guess_index] == MatchType::CorrectPosition {
+        if matches[guess_index] == MatchType::CorrectPosition {
             continue;
         } else if let Some(match_index) = matchable_letters.find(guess_char) {
-            results[guess_index] = MatchType::WrongPosition;
+            matches[guess_index] = MatchType::WrongPosition;
+            if keyboard.get(&guess_char).is_none() {
+                keyboard.insert(guess_char, MatchType::WrongPosition);
+            }
             matchable_letters.remove(match_index);
         }
     }
 
-    results
+    WordResults::from(matches, keyboard.clone())
 }
 
 fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
@@ -57,7 +74,7 @@ fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
     )
 }
 
-fn display_results(guess: &str, results: &[MatchType; 5]) {
+fn display_matches(guess: &str, results: &[MatchType; 5]) {
     let mut formatted_result = "".to_string();
     for (guess_char, result) in zip(guess.to_ascii_uppercase().chars(), results) {
         let formatted_cell = match result {
@@ -74,6 +91,13 @@ fn display_results(guess: &str, results: &[MatchType; 5]) {
     println!("{}", formatted_result);
 }
 
+fn make_empty_keyboard() -> HashMap<char, MatchType> {
+    ('a'..='z').fold(HashMap::new(), |mut acc, char| {
+        acc.insert(char, MatchType::None);
+        acc
+    })
+}
+
 fn main() {
     let words: Vec<String> = read_to_string("./words.txt")
         .unwrap()
@@ -84,6 +108,7 @@ fn main() {
     let mut rng = thread_rng();
     let actual = words.choose(&mut rng).unwrap();
     let mut guesses = 1;
+    let mut keyboard = make_empty_keyboard();
 
     loop {
         println!("Enter a guess! ");
@@ -91,10 +116,10 @@ fn main() {
         stdin().read_line(&mut buffer);
         let guess = buffer.trim();
 
-        let results = check_guess(guess, actual);
-        display_results(guess, &results);
+        let results = check_guess(guess, actual, &mut keyboard);
+        display_matches(guess, &results.matches);
 
-        if results.iter().all(|result| *result == MatchType::CorrectPosition) {
+        if results.matches.iter().all(|result| *result == MatchType::CorrectPosition) {
             println!("You win!!!");
             break;
         } else if guesses == 6 {
