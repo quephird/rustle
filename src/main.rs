@@ -57,7 +57,7 @@ fn format_cell<C: Color>(bg_color: C, guess_char: char) -> String {
     )
 }
 
-fn format_results(guess: &str, results: &[MatchType; 5]) -> String {
+fn display_results(guess: &str, results: &[MatchType; 5]) {
     let mut formatted_result = "".to_string();
     for (guess_char, result) in zip(guess.to_ascii_uppercase().chars(), results) {
         let formatted_cell = match result {
@@ -70,7 +70,8 @@ fn format_results(guess: &str, results: &[MatchType; 5]) -> String {
         formatted_result.push_str(&formatted_cell);
 
     }
-    formatted_result
+
+    println!("{}", formatted_result);
 }
 
 fn main() {
@@ -91,8 +92,7 @@ fn main() {
         let guess = buffer.trim();
 
         let results = check_guess(guess, actual);
-        let formatted_results = format_results(guess, &results);
-        println!("{}", formatted_results);
+        display_results(guess, &results);
 
         if results.iter().all(|result| *result == MatchType::CorrectPosition) {
             println!("You win!!!");
