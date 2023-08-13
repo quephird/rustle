@@ -1,4 +1,5 @@
 use std::fs::read_to_string;
+use std::io::stdin;
 use std::iter::zip;
 
 use rand::seq::SliceRandom;
@@ -25,7 +26,8 @@ enum MatchType {
 }
 
 fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
-    let mut matchable_letters = actual.to_string();
+    // TODO: Need to think of a better name and document strategy below
+    let mut matchable_letters = "".to_string();
     let mut results = [
         MatchType::None,
         MatchType::None,
@@ -37,7 +39,8 @@ fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
     for (index, (guess_char, actual_char)) in zip(guess.chars(), actual.chars()).enumerate() {
         if guess_char == actual_char {
             results[index] = MatchType::CorrectPosition;
-            matchable_letters.remove(index);
+        } else {
+            matchable_letters.push(actual_char);
         }
     }
 
@@ -79,7 +82,15 @@ fn main() {
     let mut rng = thread_rng();
     let actual = words.choose(&mut rng).unwrap();
 
-    // TODO: Need to get user input
+    loop {
+        let mut buffer = String::new();
+        stdin().read_line(&mut buffer);
+        let guess = buffer.trim();
+
+        let results = check_guess(guess, actual);
+        let formatted_results = format_results(guess, results);
+        println!("{}", formatted_results);
+    }
     // TODO: Need to validate user input for length
     // TODO: Need to check that word is in dictionary
     // TODO: Need to return to user input if there are validation errors
@@ -88,9 +99,5 @@ fn main() {
     // TODO: Need to end game after six guesses
     // TODO: Need to be able to start a new game (like with CTRL-N)
     // TODO: Need to be able to exit cleanly (like with CTRL-D)
-    let guess = "pxppo";
-    let results = check_guess(guess, actual);
-    let formatted_results = format_results(guess, results);
-    println!("{}", formatted_results);
-    println!("{}", actual);
+    // TODO: Need to print the keyboard!!!
 }
