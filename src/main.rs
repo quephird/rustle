@@ -55,7 +55,7 @@ fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
 
 fn format_results(guess: &str, results: [MatchType; 5]) -> String {
     let mut formatted_result = "".to_string();
-    for (guess_char, result) in zip(guess.chars(), results) {
+    for (guess_char, result) in zip(guess.to_ascii_uppercase().chars(), results) {
         let formatted_cell = match result {
             MatchType::CorrectPosition => format_cell(color::Green, guess_char),
             MatchType::WrongPosition => format_cell(color::Yellow, guess_char),
