@@ -20,7 +20,7 @@ enum MatchType {
     None,
 }
 
-fn format_wordle_guess(guess: &str, actual: &str) -> String {
+fn check_guess(guess: &str, actual: &str) -> [MatchType; 5] {
     let mut matchable_letters = actual.to_string();
     let mut results = [
         MatchType::None,
@@ -46,6 +46,10 @@ fn format_wordle_guess(guess: &str, actual: &str) -> String {
         }
     }
 
+    results
+}
+
+fn format_results(guess: &str, results: [MatchType; 5]) -> String {
     let mut formatted_result = "".to_string();
     for (guess_char, result) in zip(guess.chars(), results) {
         let formatted_cell = match result {
@@ -62,5 +66,21 @@ fn format_wordle_guess(guess: &str, actual: &str) -> String {
 }
 
 fn main() {
-    println!("{}", format_wordle_guess("pxppo", "abcpp"));
+    // TODO: Need to get list of words
+    // TODO: Need to load words into memory
+    // TODO: Need to choose word from list
+    // TODO: Need to get user input
+    // TODO: Need to validate user input for length
+    // TODO: Need to check that word is in dictionary
+    // TODO: Need to return to user input if there are validation errors
+    // TODO: Need to end game if guessed word is correct
+    // TODO: Need to track number of guesses
+    // TODO: Need to end game after six guesses
+    // TODO: Need to be able to start a new game (like with CTRL-N)
+    // TODO: Need to be able to exit cleanly (like with CTRL-D)
+    let guess = "pxppo";
+    let actual = "abcpp";
+    let results = check_guess(guess, actual);
+    let formatted_results = format_results(guess, results);
+    println!("{}", formatted_results);
 }
