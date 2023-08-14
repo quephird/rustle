@@ -7,13 +7,13 @@ use termion::color::Color;
 use crate::game_result::GameResult;
 use crate::MatchType;
 
-pub struct GameBoard {
+pub struct Game {
     current_guess_num: usize,
     guesses: [[(char, MatchType); 5]; 6],
     keyboard: HashMap<char, MatchType>,
 }
 
-impl GameBoard {
+impl Game {
     pub fn new() -> Self {
         Self {
             current_guess_num: 0,
