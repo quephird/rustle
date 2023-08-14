@@ -11,7 +11,6 @@ use crate::word_chooser::WordChooser;
 pub struct Game {
     word_chooser: WordChooser,
     current_word: String,
-    current_guess_num: usize,
     guesses: Guesses,
     keyboard: Keyboard,
 }
@@ -23,7 +22,6 @@ impl Game {
         Self {
             word_chooser,
             current_word: new_word,
-            current_guess_num: 0,
             guesses: Guesses::new(),
             keyboard: Keyboard::new(),
         }
@@ -58,36 +56,35 @@ impl Game {
     pub fn guess_word(&mut self, guess: String) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
+        let mut new_guess_result = [(' ', MatchType::NotGuessed); 5];
 
         for (index, (guess_char, actual_char)) in zip(guess.chars(), self.current_word.chars()).enumerate() {
             if guess_char == actual_char {
-                self.guesses[self.current_guess_num][index] = (guess_char, MatchType::CorrectPosition);
-                self.keyboard.update_status(guess_char, MatchType::CorrectPosition);
+                new_guess_result[index] = (guess_char, MatchType::CorrectPosition);
             } else {
                 matchable_letters.push(actual_char);
             }
         }
 
         for (guess_index, guess_char) in guess.chars().enumerate() {
-            if self.guesses[self.current_guess_num][guess_index].1 == MatchType::CorrectPosition {
+            if new_guess_result[guess_index].1 == MatchType::CorrectPosition {
                 continue;
             } else if let Some(match_index) = matchable_letters.find(guess_char) {
-                self.guesses[self.current_guess_num][guess_index] = (guess_char, MatchType::WrongPosition);
-                self.keyboard.update_status(guess_char, MatchType::WrongPosition);
+                new_guess_result[guess_index] = (guess_char, MatchType::WrongPosition);
                 matchable_letters.remove(match_index);
             } else {
-                self.guesses[self.current_guess_num][guess_index] = (guess_char, MatchType::None);
-                self.keyboard.update_status(guess_char, MatchType::None);
+                new_guess_result[guess_index] = (guess_char, MatchType::None);
             }
         }
 
-        if self.guesses[self.current_guess_num].iter().all(|(_, match_type)| *match_type == MatchType::CorrectPosition) {
-            self.current_guess_num += 1;
+        self.guesses.submit_new_guess(new_guess_result);
+        self.keyboard.update_all_statuses(new_guess_result);
+
+        if new_guess_result.iter().all(|(_, match_type)| *match_type == MatchType::CorrectPosition) {
             return GuessResult::Win;
-        } else if self.current_guess_num == 5 {
+        } else if self.guesses.get_guess_number() == 5 {
             return GuessResult::Lose;
         } else {
-            self.current_guess_num += 1;
             return GuessResult::StillGoing;
         }
     }

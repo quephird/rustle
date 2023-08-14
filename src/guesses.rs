@@ -4,6 +4,7 @@ use crate::has_cells::HasCells;
 use crate::match_type::MatchType;
 
 pub struct Guesses {
+    current_guess_num: usize,
     guesses: [[(char, MatchType); 5]; 6],
 }
 
@@ -12,8 +13,18 @@ impl HasCells for Guesses {}
 impl Guesses {
     pub fn new() -> Self {
         Self {
+            current_guess_num: 0,
             guesses: [[(' ', MatchType::NotGuessed); 5]; 6],
         }
+    }
+
+    pub fn submit_new_guess(&mut self, guess: [(char, MatchType); 5]) {
+        self.guesses[self.current_guess_num] = guess;
+        self.current_guess_num += 1;
+    }
+
+    pub fn get_guess_number(&self) -> usize {
+        self.current_guess_num
     }
 
     pub fn display(&self) {
