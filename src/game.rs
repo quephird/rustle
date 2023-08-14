@@ -1,10 +1,8 @@
 use std::io::stdin;
 use std::iter::zip;
 
-use termion::color;
-use termion::color::Color;
-
 use crate::guess_result::GuessResult;
+use crate::guesses::Guesses;
 use crate::keyboard::Keyboard;
 use crate::match_type::MatchType;
 use crate::word_validation_result::WordValidationResult;
@@ -14,7 +12,7 @@ pub struct Game {
     word_chooser: WordChooser,
     current_word: String,
     current_guess_num: usize,
-    guesses: [[(char, MatchType); 5]; 6],
+    guesses: Guesses,
     keyboard: Keyboard,
 }
 
@@ -26,13 +24,13 @@ impl Game {
             word_chooser,
             current_word: new_word,
             current_guess_num: 0,
-            guesses: Self::make_empty_guesses(),
+            guesses: Guesses::new(),
             keyboard: Keyboard::new(),
         }
     }
 
     pub fn display(&self) {
-        self.display_guesses();
+        self.guesses.display();
         self.keyboard.display();
     }
 
@@ -110,39 +108,5 @@ impl Game {
 
     pub fn get_current_word(&self) -> &String {
         &self.current_word
-    }
-
-    fn make_empty_guesses() -> [[(char, MatchType); 5]; 6] {
-        [[(' ', MatchType::NotGuessed); 5]; 6]
-    }
-
-    fn display_guesses(&self) {
-        for guess in self.guesses {
-            let mut formatted_result = "".to_string();
-            for (guess_char, match_type) in guess {
-                let formatted_cell = match match_type {
-                    MatchType::CorrectPosition => self.format_cell(color::Green, guess_char),
-                    MatchType::WrongPosition => self.format_cell(color::Yellow, guess_char),
-                    MatchType::None => self.format_cell(color::LightBlack, guess_char),
-                    MatchType::NotGuessed => self.format_cell(color::White, guess_char),
-                };
-
-                formatted_result.push(' ');
-                formatted_result.push_str(&formatted_cell);
-            }
-
-            println!("          {}\n", formatted_result);
-        }
-    }
-
-    fn format_cell<C: Color>(&self, bg_color: C, letter: char) -> String {
-        format!(
-            "{}{} {} {}{}",
-            color::Bg(bg_color),
-            color::Fg(color::Black),
-            letter,
-            color::Fg(color::Reset),
-            color::Bg(color::Reset),
-        )
     }
 }
