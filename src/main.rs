@@ -11,8 +11,6 @@ use crate::game_result::GameResult;
 use crate::word_chooser::WordChooser;
 
 fn main() {
-    let mut word_chooser = WordChooser::new();
-    let actual = word_chooser.choose_random_word();
     let mut game = Game::new();
 
     loop {
@@ -22,7 +20,7 @@ fn main() {
         let _ignored = stdin().read_line(&mut buffer);
         let guess = buffer.trim();
 
-        let result = game.guess_word(guess, actual);
+        let result = game.guess_word(guess);
         match result {
             GameResult::Win => {
                 game.display();
@@ -32,18 +30,17 @@ fn main() {
             GameResult::Lose => {
                 game.display();
                 println!("You lose :(");
-                println!("The word was: {}", actual);
+                println!("The word was: {}", game.get_current_word());
                 break;
             }
             GameResult::StillGoing => (),
         }
     }
-    // TODO: Rename GameBoard to Game, have it keep new random word
-    // TODO: Move random word choosing logic into WordChooser struct
     // TODO: Need to validate user input for length
     // TODO: Need to only allow for letters
     // TODO: Need to check that word is in dictionary
     // TODO: Need to return to user input if there are validation errors
     // TODO: Need to be able to start a new game (like with CTRL-N)
     // TODO: Need to be able to exit cleanly (like with CTRL-D)
+    // TODO: Think about introducing Guess and Keyboard as types
 }

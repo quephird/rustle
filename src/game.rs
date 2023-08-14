@@ -5,9 +5,11 @@ use termion::color;
 use termion::color::Color;
 
 use crate::game_result::GameResult;
-use crate::MatchType;
+use crate::{MatchType, WordChooser};
 
 pub struct Game {
+    word_chooser: WordChooser,
+    current_word: String,
     current_guess_num: usize,
     guesses: [[(char, MatchType); 5]; 6],
     keyboard: HashMap<char, MatchType>,
@@ -15,7 +17,11 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
+        let mut word_chooser = WordChooser::new();
+        let new_word = word_chooser.choose_random_word();
         Self {
+            word_chooser,
+            current_word: new_word,
             current_guess_num: 0,
             guesses: Self::make_empty_guesses(),
             keyboard: Self::make_empty_keyboard(),
@@ -27,11 +33,11 @@ impl Game {
         self.display_keyboard();
     }
 
-    pub fn guess_word(&mut self, guess: &str, actual: &str) -> GameResult {
+    pub fn guess_word(&mut self, guess: &str) -> GameResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
 
-        for (index, (guess_char, actual_char)) in zip(guess.chars(), actual.chars()).enumerate() {
+        for (index, (guess_char, actual_char)) in zip(guess.chars(), self.current_word.chars()).enumerate() {
             if guess_char == actual_char {
                 self.guesses[self.current_guess_num][index] = (guess_char, MatchType::CorrectPosition);
                 self.keyboard.insert(guess_char, MatchType::CorrectPosition);
@@ -72,6 +78,10 @@ impl Game {
             self.current_guess_num += 1;
             return GameResult::StillGoing;
         }
+    }
+
+    pub fn get_current_word(&self) -> &String {
+        &self.current_word
     }
 
     fn make_empty_guesses() -> [[(char, MatchType); 5]; 6] {

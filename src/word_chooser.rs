@@ -23,7 +23,7 @@ impl WordChooser {
         }
     }
 
-    pub fn choose_random_word(&mut self) -> &String {
-        self.words.choose(&mut self.rng).unwrap()
+    pub fn choose_random_word(&mut self) -> String {
+        self.words.choose(&mut self.rng).unwrap().clone()
     }
 }
