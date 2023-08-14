@@ -27,7 +27,13 @@ impl Keyboard {
         self.letter_statuses.get(&letter).unwrap()
     }
 
-    pub fn update_status(&mut self, letter: char, new_status: MatchType) {
+    pub fn update_all_statuses(&mut self, latest_guess: [(char, MatchType); 5]) {
+        for (guess_char, match_type) in latest_guess {
+            self.update_status(guess_char, match_type);
+        }
+    }
+
+    fn update_status(&mut self, letter: char, new_status: MatchType) {
         match new_status {
             MatchType::CorrectPosition => {
                 self.letter_statuses.insert(letter, new_status);

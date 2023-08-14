@@ -1,5 +1,6 @@
 mod game;
 mod guess_result;
+mod guesses;
 mod has_cells;
 mod keyboard;
 mod match_type;
@@ -33,5 +34,4 @@ fn main() {
     }
     // TODO: Need to be able to start a new game (like with CTRL-N)
     // TODO: Need to be able to exit cleanly (like with CTRL-D)
-    // TODO: Think about introducing Guess and Keyboard as types
 }
