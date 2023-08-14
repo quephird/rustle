@@ -3,7 +3,7 @@ mod guess_result;
 mod guesses;
 mod has_cells;
 mod keyboard;
-mod match_type;
+mod letter_status;
 mod word_chooser;
 mod word_validation_result;
 
