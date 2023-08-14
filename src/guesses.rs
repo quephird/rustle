@@ -1,5 +1,3 @@
-use termion::color;
-
 use crate::has_cells::HasCells;
 use crate::letter_status::LetterStatus;
 
@@ -30,14 +28,8 @@ impl Guesses {
     pub fn display(&self) {
         for guess in self.guesses {
             let mut formatted_result = "".to_string();
-            for (guess_char, status) in guess {
-                let formatted_cell = match status {
-                    LetterStatus::CorrectPosition => self.format_cell(color::Green, guess_char),
-                    LetterStatus::WrongPosition => self.format_cell(color::Yellow, guess_char),
-                    LetterStatus::NoMatch => self.format_cell(color::LightBlack, guess_char),
-                    LetterStatus::NotGuessed => self.format_cell(color::White, guess_char),
-                };
-
+            for (letter, status) in guess {
+                let formatted_cell = self.format_cell(letter, status);
                 formatted_result.push(' ');
                 formatted_result.push_str(&formatted_cell);
             }
