@@ -1,5 +1,7 @@
 mod game;
 mod game_result;
+mod has_cells;
+mod keyboard;
 mod match_type;
 mod word_chooser;
 
