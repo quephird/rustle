@@ -1,18 +1,19 @@
-use std::collections::HashMap;
 use std::iter::zip;
 
 use termion::color;
 use termion::color::Color;
 
 use crate::game_result::GameResult;
-use crate::{MatchType, WordChooser};
+use crate::keyboard::Keyboard;
+use crate::MatchType;
+use crate::WordChooser;
 
 pub struct Game {
     word_chooser: WordChooser,
     current_word: String,
     current_guess_num: usize,
     guesses: [[(char, MatchType); 5]; 6],
-    keyboard: HashMap<char, MatchType>,
+    keyboard: Keyboard,
 }
 
 impl Game {
@@ -24,13 +25,13 @@ impl Game {
             current_word: new_word,
             current_guess_num: 0,
             guesses: Self::make_empty_guesses(),
-            keyboard: Self::make_empty_keyboard(),
+            keyboard: Keyboard::new(),
         }
     }
 
     pub fn display(&self) {
         self.display_guesses();
-        self.display_keyboard();
+        self.keyboard.display();
     }
 
     pub fn guess_word(&mut self, guess: &str) -> GameResult {
@@ -40,7 +41,7 @@ impl Game {
         for (index, (guess_char, actual_char)) in zip(guess.chars(), self.current_word.chars()).enumerate() {
             if guess_char == actual_char {
                 self.guesses[self.current_guess_num][index] = (guess_char, MatchType::CorrectPosition);
-                self.keyboard.insert(guess_char, MatchType::CorrectPosition);
+                self.keyboard.update_status(guess_char, MatchType::CorrectPosition);
             } else {
                 matchable_letters.push(actual_char);
             }
@@ -51,21 +52,11 @@ impl Game {
                 continue;
             } else if let Some(match_index) = matchable_letters.find(guess_char) {
                 self.guesses[self.current_guess_num][guess_index] = (guess_char, MatchType::WrongPosition);
-                match self.keyboard.get(&guess_char) {
-                    Some(MatchType::None) | Some(MatchType::NotGuessed) => {
-                        self.keyboard.insert(guess_char, MatchType::WrongPosition);
-                    },
-                    _ => (),
-                }
+                self.keyboard.update_status(guess_char, MatchType::WrongPosition);
                 matchable_letters.remove(match_index);
             } else {
                 self.guesses[self.current_guess_num][guess_index] = (guess_char, MatchType::None);
-                match self.keyboard.get(&guess_char) {
-                    Some(MatchType::NotGuessed) => {
-                        self.keyboard.insert(guess_char, MatchType::None);
-                    },
-                    _ => (),
-                }
+                self.keyboard.update_status(guess_char, MatchType::None);
             }
         }
 
@@ -88,13 +79,6 @@ impl Game {
         [[(' ', MatchType::NotGuessed); 5]; 6]
     }
 
-    fn make_empty_keyboard() -> HashMap<char, MatchType> {
-        ('a'..='z').fold(HashMap::new(), |mut acc, char| {
-            acc.insert(char, MatchType::NotGuessed);
-            acc
-        })
-    }
-
     fn display_guesses(&self) {
         for guess in self.guesses {
             let mut formatted_result = "".to_string();
@@ -111,28 +95,6 @@ impl Game {
             }
 
             println!("          {}\n", formatted_result);
-        }
-    }
-
-    fn display_keyboard(&self) {
-        for (indent, keyboard_row) in [("", "qwertyuiop"), (" ", "asdfghjkl"), ("  ", "zxcvbnm")] {
-            let mut formatted_row = "".to_string();
-            formatted_row.push_str(indent);
-            for key_char in keyboard_row.chars() {
-                if let Some(match_type) = self.keyboard.get(&key_char) {
-                    let formatted_cell = match match_type {
-                        MatchType::CorrectPosition => self.format_cell(color::Green, key_char),
-                        MatchType::WrongPosition => self.format_cell(color::Yellow, key_char),
-                        MatchType::None => self.format_cell(color::LightBlack, key_char),
-                        MatchType::NotGuessed => self.format_cell(color::White, key_char),
-                    };
-
-                    formatted_row.push(' ');
-                    formatted_row.push_str(&formatted_cell);
-                }
-            }
-
-            println!("{}\n", formatted_row);
         }
     }
 

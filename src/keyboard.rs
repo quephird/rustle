@@ -23,6 +23,35 @@ impl Keyboard {
         }
     }
 
+    pub fn get_status(&self, letter: char) -> &MatchType {
+        self.letter_statuses.get(&letter).unwrap()
+    }
+
+    pub fn update_status(&mut self, letter: char, new_status: MatchType) {
+        match new_status {
+            MatchType::CorrectPosition => {
+                self.letter_statuses.insert(letter, new_status);
+            }
+            MatchType::WrongPosition => {
+                match self.get_status(letter) {
+                    MatchType::None | MatchType::NotGuessed => {
+                        self.letter_statuses.insert(letter, new_status);
+                    },
+                    _ => (),
+                }
+            },
+            MatchType::None => {
+                match self.get_status(letter) {
+                    MatchType::NotGuessed => {
+                        self.letter_statuses.insert(letter, new_status);
+                    },
+                    _ => (),
+                }
+            }
+            MatchType::NotGuessed => (),
+        }
+    }
+
     pub fn display(&self) {
         for (indent, keyboard_row) in [("", "qwertyuiop"), (" ", "asdfghjkl"), ("  ", "zxcvbnm")] {
             let mut formatted_row = "".to_string();
