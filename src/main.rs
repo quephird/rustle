@@ -2,15 +2,11 @@ mod game_board;
 mod match_type;
 mod game_result;
 
-use std::collections::HashMap;
 use std::fs::read_to_string;
 use std::io::stdin;
-use std::iter::zip;
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use termion::color;
-use termion::color::Color;
 
 use match_type::MatchType;
 use crate::game_board::GameBoard;
