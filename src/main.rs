@@ -1,26 +1,18 @@
 mod game_board;
-mod match_type;
 mod game_result;
+mod match_type;
+mod word_chooser;
 
-use std::fs::read_to_string;
 use std::io::stdin;
-
-use rand::seq::SliceRandom;
-use rand::thread_rng;
 
 use match_type::MatchType;
 use crate::game_board::GameBoard;
 use crate::game_result::GameResult;
+use crate::word_chooser::WordChooser;
 
 fn main() {
-    let words: Vec<String> = read_to_string("./words.txt")
-        .unwrap()
-        .lines()
-        .map(String::from)
-        .collect();
-
-    let mut rng = thread_rng();
-    let actual = words.choose(&mut rng).unwrap();
+    let mut word_chooser = WordChooser::new();
+    let actual = word_chooser.choose_random_word();
     let mut game_board = GameBoard::new();
 
     loop {
