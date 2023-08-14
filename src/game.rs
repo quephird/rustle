@@ -1,3 +1,4 @@
+use std::io::stdin;
 use std::iter::zip;
 
 use termion::color;
@@ -33,6 +34,27 @@ impl Game {
     pub fn display(&self) {
         self.display_guesses();
         self.keyboard.display();
+    }
+
+    pub fn get_word_from_user(&self) -> String {
+        loop {
+            println!("Enter a guess! ");
+            let mut buffer = String::new();
+            let _ignored = stdin().read_line(&mut buffer);
+            let maybe_word = buffer.trim();
+            match self.validate_word(maybe_word) {
+                WordValidationResult::NotAllLetters => {
+                    println!("Word must be all letters!");
+                },
+                WordValidationResult::NotFiveLetters => {
+                    println!("Word must be five letters long!");
+                },
+                WordValidationResult::NotInDictionary => {
+                    println!("Word not in dictionary!");
+                },
+                WordValidationResult::Ok => return maybe_word.to_string(),
+            }
+        }
     }
 
     pub fn guess_word(&mut self, guess: String) -> GuessResult {
