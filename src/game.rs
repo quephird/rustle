@@ -35,7 +35,7 @@ impl Game {
         self.keyboard.display();
     }
 
-    pub fn guess_word(&mut self, guess: &str) -> GuessResult {
+    pub fn guess_word(&mut self, guess: String) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
 
