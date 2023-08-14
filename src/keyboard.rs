@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use termion::color;
 
 use crate::has_cells::HasCells;
-use crate::MatchType;
+use crate::match_type::MatchType;
 
 pub struct Keyboard {
     letter_statuses: HashMap<char, MatchType>,

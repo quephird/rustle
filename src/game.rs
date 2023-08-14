@@ -6,9 +6,9 @@ use termion::color::Color;
 
 use crate::guess_result::GuessResult;
 use crate::keyboard::Keyboard;
-use crate::MatchType;
+use crate::match_type::MatchType;
 use crate::word_validation_result::WordValidationResult;
-use crate::WordChooser;
+use crate::word_chooser::WordChooser;
 
 pub struct Game {
     word_chooser: WordChooser,
