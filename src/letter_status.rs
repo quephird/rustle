@@ -1,7 +1,7 @@
 #[derive(Clone, Copy, PartialEq)]
-pub enum MatchType {
+pub enum LetterStatus {
     CorrectPosition,
     WrongPosition,
-    None,
+    NoMatch,
     NotGuessed,
 }

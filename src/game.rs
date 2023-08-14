@@ -4,7 +4,7 @@ use std::iter::zip;
 use crate::guess_result::GuessResult;
 use crate::guesses::Guesses;
 use crate::keyboard::Keyboard;
-use crate::match_type::MatchType;
+use crate::letter_status::LetterStatus;
 use crate::word_validation_result::WordValidationResult;
 use crate::word_chooser::WordChooser;
 
@@ -56,33 +56,33 @@ impl Game {
     pub fn guess_word(&mut self, guess: String) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
-        let mut new_guess_result = [(' ', MatchType::NotGuessed); 5];
+        let mut new_guess_result = [(' ', LetterStatus::NotGuessed); 5];
 
         for (index, (guess_char, actual_char)) in zip(guess.chars(), self.current_word.chars()).enumerate() {
             if guess_char == actual_char {
-                new_guess_result[index] = (guess_char, MatchType::CorrectPosition);
+                new_guess_result[index] = (guess_char, LetterStatus::CorrectPosition);
             } else {
                 matchable_letters.push(actual_char);
             }
         }
 
         for (guess_index, guess_char) in guess.chars().enumerate() {
-            if new_guess_result[guess_index].1 == MatchType::CorrectPosition {
+            if new_guess_result[guess_index].1 == LetterStatus::CorrectPosition {
                 continue;
             } else if let Some(match_index) = matchable_letters.find(guess_char) {
-                new_guess_result[guess_index] = (guess_char, MatchType::WrongPosition);
+                new_guess_result[guess_index] = (guess_char, LetterStatus::WrongPosition);
                 matchable_letters.remove(match_index);
             } else {
-                new_guess_result[guess_index] = (guess_char, MatchType::None);
+                new_guess_result[guess_index] = (guess_char, LetterStatus::NoMatch);
             }
         }
 
         self.guesses.submit_new_guess(new_guess_result);
         self.keyboard.update_all_statuses(new_guess_result);
 
-        if new_guess_result.iter().all(|(_, match_type)| *match_type == MatchType::CorrectPosition) {
+        if new_guess_result.iter().all(|(_, status)| *status == LetterStatus::CorrectPosition) {
             return GuessResult::Win;
-        } else if self.guesses.get_guess_number() == 5 {
+        } else if self.guesses.get_guess_number() == 6 {
             return GuessResult::Lose;
         } else {
             return GuessResult::StillGoing;
