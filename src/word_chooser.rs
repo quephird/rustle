@@ -26,4 +26,8 @@ impl WordChooser {
     pub fn choose_random_word(&mut self) -> String {
         self.words.choose(&mut self.rng).unwrap().clone()
     }
+
+    pub fn is_in_dictionary(&self, maybe_word: &str) -> bool {
+        self.words.iter().any(|word| word == maybe_word)
+    }
 }

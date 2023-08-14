@@ -1,12 +1,14 @@
+use std::io::stdin;
 use std::iter::zip;
 
 use termion::color;
 use termion::color::Color;
 
-use crate::game_result::GameResult;
+use crate::guess_result::GuessResult;
 use crate::keyboard::Keyboard;
-use crate::MatchType;
-use crate::WordChooser;
+use crate::match_type::MatchType;
+use crate::word_validation_result::WordValidationResult;
+use crate::word_chooser::WordChooser;
 
 pub struct Game {
     word_chooser: WordChooser,
@@ -34,7 +36,28 @@ impl Game {
         self.keyboard.display();
     }
 
-    pub fn guess_word(&mut self, guess: &str) -> GameResult {
+    pub fn get_word_from_user(&self) -> String {
+        loop {
+            println!("Enter a guess! ");
+            let mut buffer = String::new();
+            let _ignored = stdin().read_line(&mut buffer);
+            let maybe_word = buffer.trim();
+            match self.validate_word(maybe_word) {
+                WordValidationResult::NotAllLetters => {
+                    println!("Word must be all letters!");
+                },
+                WordValidationResult::NotFiveLetters => {
+                    println!("Word must be five letters long!");
+                },
+                WordValidationResult::NotInDictionary => {
+                    println!("Word not in dictionary!");
+                },
+                WordValidationResult::Ok => return maybe_word.to_string(),
+            }
+        }
+    }
+
+    pub fn guess_word(&mut self, guess: String) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
 
@@ -62,13 +85,27 @@ impl Game {
 
         if self.guesses[self.current_guess_num].iter().all(|(_, match_type)| *match_type == MatchType::CorrectPosition) {
             self.current_guess_num += 1;
-            return GameResult::Win;
+            return GuessResult::Win;
         } else if self.current_guess_num == 5 {
-            return GameResult::Lose;
+            return GuessResult::Lose;
         } else {
             self.current_guess_num += 1;
-            return GameResult::StillGoing;
+            return GuessResult::StillGoing;
         }
+    }
+
+    pub fn validate_word(&self, maybe_word: &str) -> WordValidationResult {
+        if !maybe_word.chars().all(|c| c.is_ascii_alphabetic()) {
+            return WordValidationResult::NotAllLetters;
+        }
+        if maybe_word.to_string().chars().count() != 5 {
+            return WordValidationResult::NotFiveLetters;
+        }
+        if !self.word_chooser.is_in_dictionary(maybe_word) {
+            return WordValidationResult::NotInDictionary;
+        }
+
+        WordValidationResult::Ok
     }
 
     pub fn get_current_word(&self) -> &String {

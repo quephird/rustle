@@ -1,47 +1,36 @@
 mod game;
-mod game_result;
+mod guess_result;
 mod has_cells;
 mod keyboard;
 mod match_type;
 mod word_chooser;
+mod word_validation_result;
 
-use std::io::stdin;
-
-use match_type::MatchType;
 use crate::game::Game;
-use crate::game_result::GameResult;
-use crate::word_chooser::WordChooser;
+use crate::guess_result::GuessResult;
 
 fn main() {
     let mut game = Game::new();
 
     loop {
         game.display();
-        println!("Enter a guess! ");
-        let mut buffer = String::new();
-        let _ignored = stdin().read_line(&mut buffer);
-        let guess = buffer.trim();
-
+        let guess = game.get_word_from_user();
         let result = game.guess_word(guess);
         match result {
-            GameResult::Win => {
+            GuessResult::Win => {
                 game.display();
                 println!("You win!!!");
                 break;
             },
-            GameResult::Lose => {
+            GuessResult::Lose => {
                 game.display();
                 println!("You lose :(");
                 println!("The word was: {}", game.get_current_word());
                 break;
             }
-            GameResult::StillGoing => (),
+            GuessResult::StillGoing => (),
         }
     }
-    // TODO: Need to validate user input for length
-    // TODO: Need to only allow for letters
-    // TODO: Need to check that word is in dictionary
-    // TODO: Need to return to user input if there are validation errors
     // TODO: Need to be able to start a new game (like with CTRL-N)
     // TODO: Need to be able to exit cleanly (like with CTRL-D)
     // TODO: Think about introducing Guess and Keyboard as types
