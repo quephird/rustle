@@ -46,6 +46,8 @@ fn main() {
             GameResult::StillGoing => (),
         }
     }
+    // TODO: Rename GameBoard to Game, have it keep new random word
+    // TODO: Move random word choosing logic into WordChooser struct
     // TODO: Need to validate user input for length
     // TODO: Need to only allow for letters
     // TODO: Need to check that word is in dictionary
