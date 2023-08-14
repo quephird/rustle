@@ -3,9 +3,10 @@ use std::iter::zip;
 use termion::color;
 use termion::color::Color;
 
-use crate::game_result::GameResult;
+use crate::guess_result::GuessResult;
 use crate::keyboard::Keyboard;
 use crate::MatchType;
+use crate::word_validation_result::WordValidationResult;
 use crate::WordChooser;
 
 pub struct Game {
@@ -34,7 +35,7 @@ impl Game {
         self.keyboard.display();
     }
 
-    pub fn guess_word(&mut self, guess: &str) -> GameResult {
+    pub fn guess_word(&mut self, guess: &str) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
 
@@ -62,13 +63,27 @@ impl Game {
 
         if self.guesses[self.current_guess_num].iter().all(|(_, match_type)| *match_type == MatchType::CorrectPosition) {
             self.current_guess_num += 1;
-            return GameResult::Win;
+            return GuessResult::Win;
         } else if self.current_guess_num == 5 {
-            return GameResult::Lose;
+            return GuessResult::Lose;
         } else {
             self.current_guess_num += 1;
-            return GameResult::StillGoing;
+            return GuessResult::StillGoing;
         }
+    }
+
+    pub fn validate_word(&self, maybe_word: &str) -> WordValidationResult {
+        if !maybe_word.chars().all(|c| c.is_ascii_alphabetic()) {
+            return WordValidationResult::NotAllLetters;
+        }
+        if maybe_word.to_string().chars().count() != 5 {
+            return WordValidationResult::NotFiveLetters;
+        }
+        if !self.word_chooser.is_in_dictionary(maybe_word) {
+            return WordValidationResult::NotInDictionary;
+        }
+
+        WordValidationResult::Ok
     }
 
     pub fn get_current_word(&self) -> &String {

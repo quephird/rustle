@@ -1,16 +1,18 @@
 mod game;
-mod game_result;
+mod guess_result;
 mod has_cells;
 mod keyboard;
 mod match_type;
 mod word_chooser;
+mod word_validation_result;
 
 use std::io::stdin;
 
 use match_type::MatchType;
 use crate::game::Game;
-use crate::game_result::GameResult;
+use crate::guess_result::GuessResult;
 use crate::word_chooser::WordChooser;
+use crate::word_validation_result::WordValidationResult;
 
 fn main() {
     let mut game = Game::new();
@@ -21,21 +23,36 @@ fn main() {
         let mut buffer = String::new();
         let _ignored = stdin().read_line(&mut buffer);
         let guess = buffer.trim();
+        match game.validate_word(guess) {
+            WordValidationResult::NotAllLetters => {
+                println!("Word must be all letters!");
+                continue;
+            },
+            WordValidationResult::NotFiveLetters => {
+                println!("Word must be five letters long!");
+                continue;
+            },
+            WordValidationResult::NotInDictionary => {
+                println!("Word not in dictionary!");
+                continue;
+            },
+            WordValidationResult::Ok => (),
+        }
 
         let result = game.guess_word(guess);
         match result {
-            GameResult::Win => {
+            GuessResult::Win => {
                 game.display();
                 println!("You win!!!");
                 break;
             },
-            GameResult::Lose => {
+            GuessResult::Lose => {
                 game.display();
                 println!("You lose :(");
                 println!("The word was: {}", game.get_current_word());
                 break;
             }
-            GameResult::StillGoing => (),
+            GuessResult::StillGoing => (),
         }
     }
     // TODO: Need to validate user input for length

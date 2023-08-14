@@ -1,5 +1,5 @@
 #[derive(PartialEq)]
-pub enum GameResult {
+pub enum GuessResult {
     Win,
     StillGoing,
     Lose,
