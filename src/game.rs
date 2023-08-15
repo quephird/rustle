@@ -27,6 +27,12 @@ impl Game {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.guesses = Guesses::new();
+        self.keyboard = Keyboard::new();
+        self.current_word = self.word_chooser.choose_random_word();
+    }
+
     pub fn display(&self) {
         self.guesses.display();
         self.keyboard.display();
