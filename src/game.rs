@@ -1,10 +1,12 @@
 use std::io::stdin;
 use std::iter::zip;
+use std::process::exit;
 
 use crate::guess_result::GuessResult;
 use crate::guesses::Guesses;
 use crate::keyboard::Keyboard;
 use crate::letter_status::LetterStatus;
+use crate::prompt_result::PromptResult;
 use crate::word_validation_result::WordValidationResult;
 use crate::word_chooser::WordChooser;
 
@@ -59,6 +61,20 @@ impl Game {
         }
     }
 
+    fn validate_word(&self, maybe_word: &str) -> WordValidationResult {
+        if !maybe_word.chars().all(|c| c.is_ascii_alphabetic()) {
+            return WordValidationResult::NotAllLetters;
+        }
+        if maybe_word.to_string().chars().count() != 5 {
+            return WordValidationResult::NotFiveLetters;
+        }
+        if !self.word_chooser.is_in_dictionary(maybe_word) {
+            return WordValidationResult::NotInDictionary;
+        }
+
+        WordValidationResult::Ok
+    }
+
     pub fn guess_word(&mut self, guess: String) -> GuessResult {
         // TODO: Need to think of a better name and document strategy below
         let mut matchable_letters = "".to_string();
@@ -95,18 +111,45 @@ impl Game {
         }
     }
 
-    pub fn validate_word(&self, maybe_word: &str) -> WordValidationResult {
-        if !maybe_word.chars().all(|c| c.is_ascii_alphabetic()) {
-            return WordValidationResult::NotAllLetters;
-        }
-        if maybe_word.to_string().chars().count() != 5 {
-            return WordValidationResult::NotFiveLetters;
-        }
-        if !self.word_chooser.is_in_dictionary(maybe_word) {
-            return WordValidationResult::NotInDictionary;
+    pub fn handle_guess_result(&mut self, guess_result: GuessResult) {
+        match guess_result {
+            GuessResult::Win => {
+                self.display();
+                println!("You win!!!");
+            },
+            GuessResult::Lose => {
+                self.display();
+                println!("You lose :(");
+                println!("The word was: {}", self.get_current_word());
+            },
+            GuessResult::StillGoing => return,
         }
 
-        WordValidationResult::Ok
+        let prompt_result = self.prompt_for_new_game();
+        match prompt_result {
+            PromptResult::Yes => {
+                println!("Starting a new game...\n");
+                self.reset();
+            },
+            PromptResult::No => {
+                println!("Good bye!!!");
+                exit(0);
+            },
+        }
+    }
+
+    fn prompt_for_new_game(&self) -> PromptResult {
+        loop {
+            println!("Did you want to play another game? (y/n)");
+            let mut buffer = String::new();
+            let _ignored = stdin().read_line(&mut buffer);
+            let response = buffer.trim();
+            match response.to_ascii_uppercase().as_str() {
+                "Y" => return PromptResult::Yes,
+                "N" => return PromptResult::No,
+                _ => (),
+            }
+        }
     }
 
     pub fn get_current_word(&self) -> &String {
