@@ -119,10 +119,12 @@ impl Game {
         match guess_result {
             GuessResult::Win => {
                 self.display();
+                self.wins += 1;
                 println!("You win!!!");
             },
             GuessResult::Lose => {
                 self.display();
+                self.losses += 1;
                 println!("You lose :(");
                 println!("The word was: {}", self.get_current_word());
             },
@@ -136,6 +138,7 @@ impl Game {
                 self.reset();
             },
             PromptResult::No => {
+                println!("Wins: {}, losses: {}", self.wins, self.losses);
                 println!("Good bye!!!");
                 exit(0);
             },
