@@ -15,6 +15,8 @@ pub struct Game {
     current_word: String,
     guesses: Guesses,
     keyboard: Keyboard,
+    wins: usize,
+    losses: usize,
 }
 
 impl Game {
@@ -26,6 +28,8 @@ impl Game {
             current_word: new_word,
             guesses: Guesses::new(),
             keyboard: Keyboard::new(),
+            wins: 0,
+            losses: 0,
         }
     }
 
@@ -115,10 +119,12 @@ impl Game {
         match guess_result {
             GuessResult::Win => {
                 self.display();
+                self.wins += 1;
                 println!("You win!!!");
             },
             GuessResult::Lose => {
                 self.display();
+                self.losses += 1;
                 println!("You lose :(");
                 println!("The word was: {}", self.get_current_word());
             },
@@ -132,6 +138,7 @@ impl Game {
                 self.reset();
             },
             PromptResult::No => {
+                println!("Wins: {}, losses: {}", self.wins, self.losses);
                 println!("Good bye!!!");
                 exit(0);
             },
