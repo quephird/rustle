@@ -15,6 +15,8 @@ pub struct Game {
     current_word: String,
     guesses: Guesses,
     keyboard: Keyboard,
+    wins: usize,
+    losses: usize,
 }
 
 impl Game {
@@ -26,6 +28,8 @@ impl Game {
             current_word: new_word,
             guesses: Guesses::new(),
             keyboard: Keyboard::new(),
+            wins: 0,
+            losses: 0,
         }
     }
 
